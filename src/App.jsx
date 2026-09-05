@@ -16,7 +16,7 @@ import Students from "./Components/User/Students";
 import StudentDetailView from "./Components/User/StudentDetailView";
 import Attendance from "./Components/User/Attendance";
 import Finance from "./Components/User/Finance";
-import Schoolsettings from "./Components/User/Schoolsettings";
+import SchoolSettings from "./Components/User/SchoolSettings";
 import FinancialAnalytics from "./Components/Super/FinancialAnalytics";
 import ApprovedSchoolsBox from "./Components/Super/ApprovedSchoolsBox";
 import PendingInquiries from "./Components/Super/PendingInquiries";
@@ -161,7 +161,7 @@ function App() {
           <Route path="attendance" element={<Attendance />} />
           <Route path="finance" element={<Finance />} />
           <Route path="examination" element={<SchoolExaminationDashboard />} />
-          <Route path="settings" element={<Schoolsettings />} />
+          <Route path="settings" element={<SchoolSettings />} />
         </Route>
 
         {/* TEACHER PORTAL */}
