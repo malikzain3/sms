@@ -37,6 +37,7 @@ const PendingInquiries = () => {
         cnic: selectedItem.cnic || "N/A",
         logoURL: selectedItem.logoURL || "",
         plan: selectedItem.selectedPlan || "free",
+        selectedPlan: selectedItem.selectedPlan || "free",
         registrationDate: todayStr,
         billingDay: billingDay,
         status: "active",
@@ -63,6 +64,7 @@ const PendingInquiries = () => {
         role: "schooladmin",
         schoolId: schoolRef.id,
         status: "active",
+        selectedPlan: selectedItem.selectedPlan || "free",
       });
 
       // 4. Update initial tracking record status to approved

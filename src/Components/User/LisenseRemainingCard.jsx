@@ -17,6 +17,7 @@ const LicenseRemainingCard = () => {
     advance: 0,
     lastPaymentDate: "No Payment Recorded",
     renewalDeadline: "No Payment Recorded",
+    selectedPlan: "free",
   });
 
   useEffect(() => {
@@ -73,6 +74,7 @@ const LicenseRemainingCard = () => {
               lastPaymentDate:
                 data.lastPayment || data.createdAt || "No Payment ",
               renewalDeadline: deadlineDateString,
+              selectedPlan: data.selectedPlan || data.plan || "free",
             });
           }
         } catch (err) {
@@ -103,6 +105,41 @@ const LicenseRemainingCard = () => {
               Subscription status
             </p>
           </div>
+
+          {/* Plan Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`mb-3 flex items-center justify-between rounded-xl border px-3 py-2 shadow-sm ${
+              licenseData.selectedPlan === "pro"
+                ? "border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50"
+                : "border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                  licenseData.selectedPlan === "pro"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-500 text-white"
+                }`}
+              >
+                {licenseData.selectedPlan === "pro" ? "Pro Plan" : "Free Plan"}
+              </span>
+            </div>
+            <span
+              className={`text-[9px] font-bold ${
+                licenseData.selectedPlan === "pro"
+                  ? "text-indigo-700"
+                  : "text-slate-600"
+              }`}
+            >
+              {licenseData.selectedPlan === "pro"
+                ? "Unlimited Access"
+                : "Max 100 Students Allowed"}
+            </span>
+          </motion.div>
 
           <div className="space-y-2.5">
             {[

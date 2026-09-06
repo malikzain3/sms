@@ -96,10 +96,16 @@ const SchoolDashboard = () => {
     try {
       setIsLoggingOut(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // LocalStorage clean karein
       localStorage.removeItem("schoolix_session");
       localStorage.removeItem("active_dashboard_tab");
+      
+      // Firebase SignOut
       await signOut(auth);
-      navigate("/");
+
+      // Clean Hard Reset (Is se URL bilkul clean ho jayega)
+      window.location.href = "/";
     } catch (err) {
       console.log("Logout Error:", err);
       setIsLoggingOut(false);
@@ -223,7 +229,7 @@ const SchoolDashboard = () => {
             <aside
               ref={railRef}
               className="hidden lg:flex flex-col justify-between w-20 shrink-0 bg-white border-r border-slate-200/80 p-4 z-30"
-                className="hidden lg:flex flex-col justify-between w-20 2xl:w-22 shrink-0 bg-white border-r border-slate-200/80 p-4 2xl:p-5 z-30"
+              className="hidden lg:flex flex-col justify-between w-20 2xl:w-22 shrink-0 bg-white border-r border-slate-200/80 p-4 2xl:p-5 z-30"
             >
               <div className="space-y-7">
                 {/* Collapsed state: hamburger only, no logo — sits directly
@@ -283,7 +289,7 @@ const SchoolDashboard = () => {
                   exit={{ x: "-100%" }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                   className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-slate-200/80 flex flex-col justify-between p-4 lg:p-5 shadow-2xl"
-                    className="fixed inset-y-0 left-0 z-50 w-72 2xl:w-80 max-w-[85vw] bg-white border-r border-slate-200/80 flex flex-col justify-between p-4 lg:p-5 2xl:p-6 shadow-2xl"
+                  className="fixed inset-y-0 left-0 z-50 w-72 2xl:w-80 max-w-[85vw] bg-white border-r border-slate-200/80 flex flex-col justify-between p-4 lg:p-5 2xl:p-6 shadow-2xl"
                 >
                   <div className="space-y-7">
                     {/* Brand Identity / Logo */}

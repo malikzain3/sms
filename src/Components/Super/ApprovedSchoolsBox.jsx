@@ -206,6 +206,17 @@ const ApprovedSchoolsBox = () => {
                     <span className="mr-1 text-[10px]">●</span>
                     {school.status === "active" ? "Active" : "Inactive"}
                   </span>
+                  <span
+                    className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border whitespace-nowrap ${
+                      (school.selectedPlan || school.plan) === "pro"
+                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                        : "bg-slate-700/30 text-slate-300 border-slate-600/30"
+                    }`}
+                  >
+                    {(school.selectedPlan || school.plan) === "pro"
+                      ? "Pro Plan"
+                      : "Free Plan"}
+                  </span>
                 </div>
                 {school.address && (
                   <p

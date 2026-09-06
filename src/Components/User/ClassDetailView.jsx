@@ -28,6 +28,7 @@ import {
   Search,
 } from "lucide-react";
 import PageLoader from "./PageLoader";
+import UpgradeModal from "./UpgradeModal";
 
 const MIN_COURSES = 3;
 const MAX_COURSES = 8;
@@ -105,6 +106,9 @@ const ClassDetailView = () => {
   const [loading, setLoading] = useState(false);
   const [teachersList, setTeachersList] = useState([]);
   const [allClasses, setAllClasses] = useState([]);
+  const [schoolPlan, setSchoolPlan] = useState("free");
+  const [totalSchoolStudentCount, setTotalSchoolStudentCount] = useState(0);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const classTeacher =
     Array.isArray(classData?.teachers) && classData.teachers.length > 0
@@ -141,6 +145,38 @@ const ClassDetailView = () => {
         docs.push({ id: doc.id, ...doc.data() });
       });
       setAllClasses(docs);
+    });
+    return () => unsubscribe();
+  }, [classData?.schoolId]);
+
+  // Live plan + school-wide student count, read straight from Firestore so
+  // an upgrade to Pro lifts the enrollment cap immediately (per Phase 2
+  // decision to keep reading selectedPlan from the school doc, not
+  // localStorage). The cap applies school-wide, not per-class, so this
+  // counts every student under the school — not just this class's roster.
+  useEffect(() => {
+    if (!classData?.schoolId) return;
+    const unsubscribe = onSnapshot(
+      doc(db, "schools", classData.schoolId),
+      (snap) => {
+        const data = snap.data();
+        setSchoolPlan(data?.selectedPlan || data?.plan || "free");
+      },
+      (error) => {
+        console.error("Failed to read school plan:", error);
+      },
+    );
+    return () => unsubscribe();
+  }, [classData?.schoolId]);
+
+  useEffect(() => {
+    if (!classData?.schoolId) return;
+    const q = query(
+      collection(db, "students"),
+      where("schoolId", "==", classData.schoolId),
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setTotalSchoolStudentCount(snapshot.size);
     });
     return () => unsubscribe();
   }, [classData?.schoolId]);
@@ -249,6 +285,15 @@ const ClassDetailView = () => {
     setStudentForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const FREE_PLAN_STUDENT_LIMIT = 100;
+  const FREE_PLAN_WARNING_THRESHOLD = 80;
+  const classLimitReached =
+    schoolPlan === "free" &&
+    totalSchoolStudentCount >= FREE_PLAN_STUDENT_LIMIT;
+  const classNearLimit =
+    schoolPlan === "free" &&
+    totalSchoolStudentCount >= FREE_PLAN_WARNING_THRESHOLD;
+
   const handleSaveStudent = async (e) => {
     e.preventDefault();
     setStudentFormError("");
@@ -257,6 +302,20 @@ const ClassDetailView = () => {
     try {
       const { studentName, rollNumber, email, cnic, gender } = studentForm;
       if (!studentName || !rollNumber || !gender) return;
+
+      // Enforce the Free Plan's 100-student cap (school-wide) for new
+      // enrollments only — editing an existing student never adds to the
+      // count, so it stays exempt.
+      if (
+        !editingStudentId &&
+        schoolPlan === "free" &&
+        totalSchoolStudentCount >= FREE_PLAN_STUDENT_LIMIT
+      ) {
+        setStudentFormError(
+          "Student limit reached! Your school is currently on the Free Plan (Max 100 students). Please upgrade to Pro for unlimited student enrollments.",
+        );
+        return;
+      }
 
       const rollTaken = students.some(
         (s) =>
@@ -905,7 +964,32 @@ const ClassDetailView = () => {
               onSubmit={handleSaveStudent}
               className="space-y-2 xl:space-y-2.5"
             >
-              {/* Student Name & Father Name Grid */}
+              {!editingStudentId && classNearLimit && (
+                <div
+                  className={`rounded-lg xl:rounded-xl border px-3 py-2.5 text-xs xl:text-[13px] font-semibold ${
+                    classLimitReached
+                      ? "border-amber-300 bg-amber-50 text-amber-700"
+                      : "border-sky-200 bg-sky-50 text-sky-700"
+                  }`}
+                >
+                  <p>
+                    {classLimitReached
+                      ? "⚠️ Student limit reached! Your school is currently on the Free Plan (Max 100 students). Please upgrade to Pro for unlimited student enrollments."
+                      : `You're approaching the Free Plan limit (${totalSchoolStudentCount}/100 students). Upgrade to Pro for unlimited enrollments.`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                    className={`mt-2 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition ${
+                      classLimitReached
+                        ? "bg-amber-600 hover:bg-amber-700"
+                        : "bg-sky-600 hover:bg-sky-700"
+                    }`}
+                  >
+                    Upgrade to Pro
+                  </button>
+                </div>
+              )}              {/* Student Name & Father Name Grid */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] xl:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -1076,7 +1160,7 @@ const ClassDetailView = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (!editingStudentId && classLimitReached)}
                   className="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-lg xl:rounded-xl text-xs xl:text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors hover:bg-indigo-700"
                 >
                   {loading
@@ -1348,6 +1432,13 @@ const ClassDetailView = () => {
           </div>
         </div>
       )}
+
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        schoolId={classData?.schoolId}
+        schoolName={classData?.schoolName}
+      />
     </div>
   );
 };

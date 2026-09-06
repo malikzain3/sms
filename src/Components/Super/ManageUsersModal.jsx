@@ -22,6 +22,7 @@ const ManageUsersModal = ({ isOpen, onClose, school, onStatusChange }) => {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("active");
   const [paymentStatus, setPaymentStatus] = useState("Paid");
+  const [selectedPlan, setSelectedPlan] = useState("free");
 
   // For LOGO
   const uploadLogoImage = async (schoolId) => {
@@ -50,6 +51,7 @@ const ManageUsersModal = ({ isOpen, onClose, school, onStatusChange }) => {
       setPhone(school.phone || "");
       setStatus(school.status || "active");
       setPaymentStatus(school.paymentStatus || "Paid");
+      setSelectedPlan(school.selectedPlan || school.plan || "free");
     }
   }, [school]);
 
@@ -69,6 +71,7 @@ const ManageUsersModal = ({ isOpen, onClose, school, onStatusChange }) => {
         paymentStatus: paymentStatus,
         cnic: cnic,
         logoUrl: finalLogoUrl,
+        selectedPlan: selectedPlan,
       });
 
       if (school.email) {
@@ -80,6 +83,7 @@ const ManageUsersModal = ({ isOpen, onClose, school, onStatusChange }) => {
           const userDoc = querySnapshot.docs[0];
           await updateDoc(doc(db, "users", userDoc.id), {
             status: status,
+            selectedPlan: selectedPlan,
           });
         }
       }
@@ -174,6 +178,21 @@ const ManageUsersModal = ({ isOpen, onClose, school, onStatusChange }) => {
               <option value="partial">🟡 Partially Paid</option>
               <option value="unpaid">🔴 Unpaid</option>
               <option value="advancePaid">💎 Advance Paid</option>
+            </select>
+          </div>
+
+          {/* Subscription plan */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 mb-1">
+              Subscription Plan
+            </label>
+            <select
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-cyan-500"
+            >
+              <option value="free">⚡ Free Plan (Max 100 Students)</option>
+              <option value="pro">💎 Pro Plan (Unlimited Access)</option>
             </select>
           </div>
 

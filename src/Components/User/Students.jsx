@@ -15,6 +15,7 @@ import { db } from "../../firebaseConfig";
 import Header from "./Header";
 import { X } from "lucide-react";
 import PageLoader from "./PageLoader";
+import UpgradeModal from "./UpgradeModal";
 
 const Students = () => {
   const [studentsList, setStudentsList] = useState([]);
@@ -26,6 +27,8 @@ const Students = () => {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [schoolPlan, setSchoolPlan] = useState("free");
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const emptyForm = {
     studentName: "",
@@ -81,6 +84,23 @@ const Students = () => {
       snapshot.forEach((doc) => docs.push({ id: doc.id, ...doc.data() }));
       setClassesList(docs);
     });
+    return () => unsubscribe();
+  }, [currentSchoolId]);
+
+  // Keep the school's plan reactive — reading straight from Firestore
+  // (not localStorage) so an upgrade to Pro lifts the enrollment cap
+  // immediately without requiring the admin to log out/in.
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      doc(db, "schools", currentSchoolId),
+      (snap) => {
+        const data = snap.data();
+        setSchoolPlan(data?.selectedPlan || data?.plan || "free");
+      },
+      (error) => {
+        console.error("Failed to read school plan:", error);
+      },
+    );
     return () => unsubscribe();
   }, [currentSchoolId]);
 
@@ -173,6 +193,14 @@ const Students = () => {
     String(classItem.section || "").trim(),
   );
 
+  const FREE_PLAN_STUDENT_LIMIT = 100;
+  const FREE_PLAN_WARNING_THRESHOLD = 80;
+  const limitReached =
+    schoolPlan === "free" && studentsList.length >= FREE_PLAN_STUDENT_LIMIT;
+  const nearLimit =
+    schoolPlan === "free" &&
+    studentsList.length >= FREE_PLAN_WARNING_THRESHOLD;
+
   const handleDeleteStudent = async (student) => {
     if (!window.confirm("Are you sure you want to remove this student?"))
       return;
@@ -217,6 +245,19 @@ const Students = () => {
     }
     if (!gender) {
       setFormError("Please select a gender.");
+      return;
+    }
+
+    // Enforce the Free Plan's 100-student cap for new enrollments only —
+    // edits to existing students never add to the count, so they're exempt.
+    if (
+      !editingStudentId &&
+      schoolPlan === "free" &&
+      studentsList.length >= FREE_PLAN_STUDENT_LIMIT
+    ) {
+      setFormError(
+        "Student limit reached! Your school is currently on the Free Plan (Max 100 students). Please upgrade to Pro for unlimited student enrollments.",
+      );
       return;
     }
 
@@ -501,7 +542,32 @@ const Students = () => {
                 </button>
               </div>
               <form onSubmit={handleSaveStudent} className="space-y-3">
-                <div>
+                {!editingStudentId && nearLimit && (
+                  <div
+                    className={`rounded-xl border px-3 py-2.5 text-[13px] font-semibold ${
+                      limitReached
+                        ? "border-amber-300 bg-amber-50 text-amber-700"
+                        : "border-sky-200 bg-sky-50 text-sky-700"
+                    }`}
+                  >
+                    <p>
+                      {limitReached
+                        ? "⚠️ Student limit reached! Your school is currently on the Free Plan (Max 100 students). Please upgrade to Pro for unlimited student enrollments."
+                        : `You're approaching the Free Plan limit (${studentsList.length}/100 students). Upgrade to Pro for unlimited enrollments.`}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsUpgradeModalOpen(true)}
+                      className={`mt-2 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition ${
+                        limitReached
+                          ? "bg-amber-600 hover:bg-amber-700"
+                          : "bg-sky-600 hover:bg-sky-700"
+                      }`}
+                    >
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                )}                <div>
                   <label className="text-[13px] font-bold text-slate-400 uppercase">
                     Student Full Name
                   </label>
@@ -725,7 +791,7 @@ const Students = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={saving || (!editingStudentId && limitReached)}
                     className="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-all text-[15px]"
                   >
                     {saving
@@ -740,6 +806,12 @@ const Students = () => {
           </div>
         )}
       </div>
+
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        schoolId={currentSchoolId}
+      />
     </div>
   );
 };

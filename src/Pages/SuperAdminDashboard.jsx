@@ -14,6 +14,7 @@ import {
   ShieldUser,
   Menu,
   X,
+  Crown,
 } from "lucide-react";
 
 import {
@@ -32,6 +33,7 @@ function SuperAdminDashboard() {
   const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
   const [schools, setSchools] = useState([]);
+  const [upgradeRequests, setUpgradeRequests] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -41,6 +43,7 @@ function SuperAdminDashboard() {
     const path = location.pathname;
     if (path.includes("/schools")) return "All Schools";
     if (path.includes("/inquiries")) return "Pending Inquiries";
+    if (path.includes("/upgrades")) return "Upgrade Requests";
     if (path.includes("/financial")) return "Analytics & Reports";
     if (path.includes("/settings")) return "System Settings";
     return "Super Admin Dashboard"; // Default title
@@ -58,6 +61,27 @@ function SuperAdminDashboard() {
         ...doc.data(),
       }));
       setInquiries(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Upgrade requests are created by UpgradeModal.jsx with status: "pending"
+  // on the upgradeRequests/{id} doc (the school doc itself separately gets
+  // upgradeStatus: "pending_upgrade" — see UpgradeRequestsBox for how both
+  // get flipped on approve/reject).
+  useEffect(() => {
+    const q = query(
+      collection(db, "upgradeRequests"),
+      where("status", "==", "pending"),
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUpgradeRequests(data);
     });
 
     return () => unsubscribe();
@@ -192,6 +216,26 @@ function SuperAdminDashboard() {
                     </span>
                   )}
                 </NavLink>
+
+                <NavLink
+                  to="/superadmin/upgrades"
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      isActive
+                        ? "bg-cyan-600 text-white shadow-lg shadow-cyan-600/10"
+                        : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    }`
+                  }
+                >
+                  <Crown />
+                  <span>Upgrade Requests</span>
+                  {upgradeRequests.length > 0 && (
+                    <span className="ml-auto bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                      {upgradeRequests.length}
+                    </span>
+                  )}
+                </NavLink>
               </nav>
               <div className="p-4 border-t border-slate-800">
                 <button
@@ -234,7 +278,7 @@ function SuperAdminDashboard() {
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight mb-6">
                     {getPageTitle()}
                   </h1>
-                  <Outlet context={{schools, inquiries}}/>
+                  <Outlet context={{ schools, inquiries, upgradeRequests }} />
                 </div>
               </div>
             </div>

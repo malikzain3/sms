@@ -20,6 +20,7 @@ import SchoolSettings from "./Components/User/SchoolSettings";
 import FinancialAnalytics from "./Components/Super/FinancialAnalytics";
 import ApprovedSchoolsBox from "./Components/Super/ApprovedSchoolsBox";
 import PendingInquiries from "./Components/Super/PendingInquiries";
+import UpgradeRequestsBox from "./Components/Super/UpgradeRequestsBox";
 import SchoolExaminationDashboard from "./Components/User/SchoolExaminationDashboard";
 
 // Context API Provider
@@ -125,12 +126,15 @@ function App() {
     }
 
     if (!authorized) {
-      return (
-        <Navigate
-          to={`/?redirect=${encodeURIComponent(location.pathname + location.search)}`}
-          replace
-        />
+      // Pure root paths like /superadmin or /school ko query state mein na bhejein
+      const isBaseRoute = ["/superadmin", "/school", "/teacher", "/"].includes(
+        location.pathname,
       );
+      const redirectQuery = isBaseRoute
+        ? ""
+        : `?redirect=${encodeURIComponent(location.pathname + location.search)}`;
+
+      return <Navigate to={`/${redirectQuery}`} replace />;
     }
     return children;
   };
@@ -207,6 +211,8 @@ function App() {
           <Route path="financial" element={<FinancialAnalytics />} />
           <Route path="schools" element={<ApprovedSchoolsBox />} />
           <Route path="inquiries" element={<PendingInquiries />} />
+          {/* Fix path name here */}
+          <Route path="upgrades" element={<UpgradeRequestsBox />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

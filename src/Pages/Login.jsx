@@ -89,19 +89,35 @@ function Login() {
           );
           return;
         }
+        // Check function: URL redirect path is user role ke liye valid hai ya nahi
+        const isValidPathForRole = (path, role) => {
+          if (!path) return false;
+          if (role === "superadmin" && path.startsWith("/superadmin"))
+            return true;
+          if (
+            (role === "schooladmin" || role === "school_admin") &&
+            path.startsWith("/school")
+          )
+            return true;
+          if (role === "teacher" && path.startsWith("/teacher")) return true;
+          return false;
+        };
 
         if (userData.role === "superadmin") {
-          navigate(redirectPath || "/superadmin", { replace: true });
+          const target = isValidPathForRole(redirectPath, "superadmin")
+            ? redirectPath
+            : "/superadmin";
+          navigate(target, { replace: true });
         } else if (
           userData.role === "schooladmin" ||
           userData.role === "school_admin"
         ) {
           localStorage.setItem("active_dashboard_tab", "Dashboard");
-          navigate(redirectPath || "/school", { replace: true });
+          const target = isValidPathForRole(redirectPath, "schooladmin")
+            ? redirectPath
+            : "/school";
+          navigate(target, { replace: true });
         } else if (userData.role === "teacher") {
-          // teacherId is stored on the users/{uid} doc when the account was
-          // created (see utils/secondaryAuth.js) — carry it in the session
-          // so the Teacher Portal never has to re-look-it-up on every page.
           localStorage.setItem(
             "schoolix_session",
             JSON.stringify({
@@ -111,7 +127,10 @@ function Login() {
               teacherId: userData.teacherId || null,
             }),
           );
-          navigate(redirectPath || "/teacher", { replace: true });
+          const target = isValidPathForRole(redirectPath, "teacher")
+            ? redirectPath
+            : "/teacher";
+          navigate(target, { replace: true });
         } else {
           setError("No user profile found. Contact support.");
         }
@@ -182,6 +201,10 @@ function Login() {
 
   const handleDemoFill = (e) => {
     e.preventDefault();
+
+    if (window.location.search) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
     // Demo credentials set karein
     setEmail("demo@schoolix.tech");
     setPassword("Demo1234");
