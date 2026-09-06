@@ -5,7 +5,11 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "../firebaseConfig.js";
-import { useNavigate, useRouteLoaderData } from "react-router-dom";
+import {
+  useNavigate,
+  useRouteLoaderData,
+  useSearchParams,
+} from "react-router-dom";
 import { motion, AnimatePresence, animateMini } from "framer-motion";
 import RegisterModal from "../Components/Login/RegisterModal.jsx";
 import { db } from "../firebaseConfig";
@@ -26,6 +30,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
   const [resetSent, setResetSent] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
@@ -85,13 +91,13 @@ function Login() {
         }
 
         if (userData.role === "superadmin") {
-          navigate("/superadmin");
+          navigate(redirectPath || "/superadmin", { replace: true });
         } else if (
           userData.role === "schooladmin" ||
           userData.role === "school_admin"
         ) {
           localStorage.setItem("active_dashboard_tab", "Dashboard");
-          navigate("/school");
+          navigate(redirectPath || "/school", { replace: true });
         } else if (userData.role === "teacher") {
           // teacherId is stored on the users/{uid} doc when the account was
           // created (see utils/secondaryAuth.js) — carry it in the session
@@ -105,7 +111,7 @@ function Login() {
               teacherId: userData.teacherId || null,
             }),
           );
-          navigate("/teacher");
+          navigate(redirectPath || "/teacher", { replace: true });
         } else {
           setError("No user profile found. Contact support.");
         }
@@ -155,7 +161,7 @@ function Login() {
               }),
             );
             localStorage.setItem("active_dashboard_tab", "Dashboard");
-            navigate("/school");
+            navigate(redirectPath || "/school", { replace: true });
           }
         } else {
           localStorage.removeItem("schoolix_session");

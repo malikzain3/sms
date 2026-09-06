@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+ProtectedRouteimport React, { useState, useEffect } from "react";
 import {
   collection,
   query,

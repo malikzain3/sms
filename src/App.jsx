@@ -1,6 +1,6 @@
 import "./App.css";
 import { useState, useEffect } from "react";
-import { Navigate, Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { auth, db } from "./firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -42,7 +42,8 @@ function App() {
     const [loading, setLoading] = useState(true);
     const [authorized, setAuthorized] = useState(false);
     const [schoolSlug, setSchoolSlug] = useState("");
-    
+    const location = useLocation();
+
     useEffect(() => {
       const localSession = JSON.parse(localStorage.getItem("schoolix_session"));
 
@@ -124,7 +125,12 @@ function App() {
     }
 
     if (!authorized) {
-      return <Navigate to="/" replace />;
+      return (
+        <Navigate
+          to={`/?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+          replace
+        />
+      );
     }
     return children;
   };
