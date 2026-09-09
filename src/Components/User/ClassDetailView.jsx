@@ -32,6 +32,11 @@ import UpgradeModal from "./UpgradeModal";
 
 const MIN_COURSES = 3;
 const MAX_COURSES = 8;
+const todayDate = () => {
+  const date = new Date();
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60 * 1000).toISOString().slice(0, 10);
+};
 
 const emptyStudentForm = {
   studentName: "",
@@ -43,6 +48,7 @@ const emptyStudentForm = {
   address: "",
   rollNumber: "",
   monthlyFee: "",
+  admissionDate: todayDate(),
   feeStatus: "Unpaid",
 };
 const normalizeRoll = (val) => {
@@ -275,6 +281,7 @@ const ClassDetailView = () => {
         stu.monthlyFee != null && stu.monthlyFee !== ""
           ? String(stu.monthlyFee)
           : "",
+      admissionDate: stu.admissionDate || todayDate(),
       feeStatus: stu.feeStatus || "Unpaid",
     });
     setStudentFormError("");
@@ -371,6 +378,7 @@ const ClassDetailView = () => {
         address: studentForm.address.trim(),
         rollNumber: studentForm.rollNumber.trim(),
         monthlyFee: Number(studentForm.monthlyFee || 0),
+        admissionDate: studentForm.admissionDate || todayDate(),
         feeStatus: studentForm.feeStatus,
       };
 
@@ -1124,6 +1132,21 @@ const ClassDetailView = () => {
                     <option value="Paid">✅ Paid</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] xl:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Admission Date
+                </label>
+                <input
+                  type="date"
+                  value={studentForm.admissionDate}
+                  onChange={(e) =>
+                    handleStudentFieldChange("admissionDate", e.target.value)
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg xl:rounded-xl px-3.5 py-2.5 mt-0.5 text-xs xl:text-sm focus:outline-none"
+                  required
+                />
               </div>
 
               {/* Address */}

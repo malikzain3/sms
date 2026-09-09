@@ -174,7 +174,6 @@ const Finance = ({ schoolId: schoolIdProp }) => {
   // Class comes first in this modal: pick a class to narrow the student
   // list down, or leave it on "All Classes" to pick from every student.
   const [feeFormClassId, setFeeFormClassId] = useState("all");
-    const [feeStudentSearch, setFeeStudentSearch] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [formFeeAmount, setFormFeeAmount] = useState("");
   const [formFeeDate, setFormFeeDate] = useState(todayStr());
@@ -912,7 +911,6 @@ const Finance = ({ schoolId: schoolIdProp }) => {
     // currently filtered to — "All Classes" on the dashboard opens the
     // modal to "All Classes" too, showing every student.
     setFeeFormClassId(classId);
-    setFeeStudentSearch("");
     setSelectedStudentId("");
     setFormFeeAmount("");
     setFormFeeDate(todayStr());
@@ -926,7 +924,6 @@ const Finance = ({ schoolId: schoolIdProp }) => {
     setEditingFeeEntry(entry);
     const owner = students.find((s) => s.id === entry.studentId);
     setFeeFormClassId((owner && owner.classId) || "all");
-    setFeeStudentSearch("");
     setSelectedStudentId(entry.studentId);
     setFormFeeAmount(String(entry.amount ?? ""));
     setFormFeeDate(entry.date || todayStr());
@@ -945,21 +942,9 @@ const Finance = ({ schoolId: schoolIdProp }) => {
         feeFormClassId === "all"
           ? students
           : students.filter((s) => s.classId === feeFormClassId);
-      const search = feeStudentSearch.trim().toLowerCase();
-      if (!search) return studentsInClass;
-      return studentsInClass.filter((student) =>
-        [
-          student.name,
-          student.fatherName,
-          student.registrationNumber,
-          student.rollNumber,
-          student.contact,
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(search)),
-      );
+      return studentsInClass;
     },
-    [students, feeFormClassId, feeStudentSearch],
+    [students, feeFormClassId],
   );
 
   const handleFeeFormClassChange = (newClassId) => {
@@ -1693,7 +1678,7 @@ const Finance = ({ schoolId: schoolIdProp }) => {
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
             onClick={() => setIsFeeModalOpen(false)}
           />
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl p-5 relative z-60">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl p-6 relative z-60">
             {/* Header */}
             <div className="flex justify-between items-start pb-3 border-b border-slate-100 mb-3">
               <div>
@@ -1717,7 +1702,7 @@ const Finance = ({ schoolId: schoolIdProp }) => {
 
             <form
               onSubmit={handleSubmitFeePayment}
-              className="space-y-3 text-xs text-slate-700"
+              className="space-y-4 text-sm text-slate-700"
             >
               {editingFeeEntry ? (
                 <div className="text-[13px] text-slate-400">
@@ -1727,16 +1712,15 @@ const Finance = ({ schoolId: schoolIdProp }) => {
                   </span>
                 </div>
               ) : (
-                /* Class & Student Side-by-Side Grid */
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Class
                     </label>
                     <select
                       value={feeFormClassId}
                       onChange={(e) => handleFeeFormClassChange(e.target.value)}
-                      className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1 font-semibold"
+                      className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 font-semibold"
                     >
                       <option value="all">All Classes</option>
                       {classOptions.map((c) => (
@@ -1748,20 +1732,9 @@ const Finance = ({ schoolId: schoolIdProp }) => {
                   </div>
 
                   <div>
-                    <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Student
                     </label>
-                    <div className="relative mt-1">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="search"
-                        value={feeStudentSearch}
-                        onChange={(e) => setFeeStudentSearch(e.target.value)}
-                        placeholder="Search all students..."
-                        aria-label="Search students"
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-[14px] text-slate-700 placeholder-slate-400 transition focus:border-indigo-300 focus:bg-white focus:outline-hidden"
-                      />
-                    </div>
                     <select
                       value={selectedStudentId}
                       onChange={(e) => {
@@ -1776,14 +1749,12 @@ const Finance = ({ schoolId: schoolIdProp }) => {
                           setFormFeeAmount("");
                         }
                       }}
-                      className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1 font-semibold"
+                      className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 font-semibold"
                       required
                     >
                       <option value="">
                         {feeModalStudents.length === 0
-                          ? feeStudentSearch
-                            ? "No students match your search"
-                            : "No students"
+                          ? "No students in this class"
                           : "Select student…"}
                       </option>
                       {feeModalStudents.map((s) => (
@@ -1800,9 +1771,9 @@ const Finance = ({ schoolId: schoolIdProp }) => {
               )}
 
               {/* Amount & Fee Type Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Amount (Rs.)
                   </label>
                   <input
@@ -1811,20 +1782,20 @@ const Finance = ({ schoolId: schoolIdProp }) => {
                     step="1"
                     value={formFeeAmount}
                     onChange={(e) => setFormFeeAmount(e.target.value)}
-                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1 font-mono font-bold"
+                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 font-mono font-bold placeholder-slate-400"
                     placeholder="e.g. 12500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Fee Type
                   </label>
                   <select
                     value={formFeeType}
                     onChange={(e) => setFormFeeType(e.target.value)}
-                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1 font-semibold"
+                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 font-semibold"
                   >
                     {FEE_TYPES.map((t) => (
                       <option key={t} value={t}>
@@ -1836,9 +1807,9 @@ const Finance = ({ schoolId: schoolIdProp }) => {
               </div>
 
               {/* Payment Date & Note Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Payment Date
                   </label>
                   <input
@@ -1846,20 +1817,20 @@ const Finance = ({ schoolId: schoolIdProp }) => {
                     value={formFeeDate}
                     onChange={(e) => setFormFeeDate(e.target.value)}
                     max={todayStr()}
-                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1 font-mono"
+                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 font-mono"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Note (optional)
                   </label>
                   <input
                     type="text"
                     value={formFeeNote}
                     onChange={(e) => setFormFeeNote(e.target.value)}
-                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl p-2 focus:outline-hidden mt-1"
+                    className="w-full bg-slate-50 text-[15px] border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1.5 focus:outline-hidden focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 placeholder-slate-400"
                     placeholder="e.g. Bank transfer"
                   />
                 </div>
@@ -1872,18 +1843,18 @@ const Finance = ({ schoolId: schoolIdProp }) => {
               )}
 
               {/* Compact Action Buttons */}
-              <div className="pt-3 border-t border-slate-100 flex justify-end items-center gap-3">
+              <div className="pt-4 border-t border-slate-100 flex justify-end items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setIsFeeModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl cursor-pointer transition-colors text-[15px] "
+                  className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl cursor-pointer transition-colors text-[15px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingFee}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs text-[15px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs text-[15px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSavingFee
                     ? "Saving..."

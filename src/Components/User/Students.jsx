@@ -17,6 +17,12 @@ import { X } from "lucide-react";
 import PageLoader from "./PageLoader";
 import UpgradeModal from "./UpgradeModal";
 
+const todayDate = () => {
+  const date = new Date();
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60 * 1000).toISOString().slice(0, 10);
+};
+
 const Students = () => {
   const [studentsList, setStudentsList] = useState([]);
   const [classesList, setClassesList] = useState([]);
@@ -40,6 +46,7 @@ const Students = () => {
     address: "",
     rollNumber: "",
     monthlyFee: "",
+    admissionDate: todayDate(),
     grade: "",
     classId: "",
     feeStatus: "Unpaid",
@@ -146,6 +153,7 @@ const Students = () => {
         stu.monthlyFee != null && stu.monthlyFee !== ""
           ? String(stu.monthlyFee)
           : "",
+      admissionDate: stu.admissionDate || todayDate(),
       grade: stu.className || "",
       classId: stu.classId || "",
       feeStatus: stu.feeStatus || "Unpaid",
@@ -317,6 +325,7 @@ const Students = () => {
         address: form.address,
         rollNumber,
         monthlyFee: Number(form.monthlyFee || 0),
+        admissionDate: form.admissionDate || todayDate(),
         feeStatus: form.feeStatus,
         classId,
         className: selectedClass?.className || "Unassigned",
@@ -644,6 +653,20 @@ const Students = () => {
                     </select>
                   </div>
                 </div>
+                <div>
+                  <label className="text-[13px] font-bold text-slate-400 uppercase">
+                    Admission Date
+                  </label>
+                  <input
+                    type="date"
+                    value={form.admissionDate}
+                    onChange={(e) =>
+                      handleFieldChange("admissionDate", e.target.value)
+                    }
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 mt-1 focus:outline-hidden text-[15px]"
+                    required
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-[13px] font-bold text-slate-400 uppercase">
@@ -742,22 +765,6 @@ const Students = () => {
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[13px] font-bold text-slate-400 uppercase">
-                      Fee Status
-                    </label>
-                    <select
-                      value={form.feeStatus}
-                      onChange={(e) =>
-                        handleFieldChange("feeStatus", e.target.value)
-                      }
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 mt-1 focus:outline-hidden text-[15px] font-semibold"
-                    >
-                      <option value="Unpaid">⚠️ Unpaid</option>
-                      <option value="Partial">🟠 Partial</option>
-                      <option value="Paid">✅ Paid</option>
                     </select>
                   </div>
                 </div>

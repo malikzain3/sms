@@ -32,6 +32,17 @@ const statusStyles = {
   Unpaid: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+const formatAdmissionDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+};
+
 const TeacherStudentDetail = () => {
   const { classId, studentId } = useParams();
   const navigate = useNavigate();
@@ -228,6 +239,11 @@ const TeacherStudentDetail = () => {
               bold
             />
             <Field label="Enrollment Status" value={student.status || "Active"} bold />
+            <Field
+              label="Admission Date"
+              value={formatAdmissionDate(student.admissionDate)}
+              mono
+            />
             <Field label="Gender" value={student.gender || "Not Specified"} bold />
             <Field label="Residential Address" value={student.address} span2 />
           </div>

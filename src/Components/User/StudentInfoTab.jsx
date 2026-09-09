@@ -1,5 +1,16 @@
 import React from "react";
 
+const formatAdmissionDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+};
+
 // Same convention as StudentFeeLedger: studentId + studentData, self-contained.
 const StudentInfoTab = ({ studentId, studentData }) => {
   const data = studentData;
@@ -71,6 +82,14 @@ const StudentInfoTab = ({ studentId, studentData }) => {
             {data.monthlyFee != null && data.monthlyFee !== ""
               ? `Rs. ${Number(data.monthlyFee).toLocaleString()}`
               : "—"}
+          </span>
+        </div>
+        <div className="p-3 bg-slate-50 rounded-xl">
+          <span className="text-[12px] text-slate-400 font-mono uppercase tracking-wider block">
+            Admission Date
+          </span>
+          <span className="text-slate-900 font-mono mt-1 block text-[15px]">
+            {formatAdmissionDate(data.admissionDate)}
           </span>
         </div>
         <div className="p-3 bg-slate-50 rounded-xl flex flex-col ">

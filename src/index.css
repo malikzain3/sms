@@ -33,6 +33,12 @@
     @apply antialiased text-slate-800 bg-slate-50/50 min-h-screen overflow-x-hidden;
   }
 
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-slate-400);
+    opacity: 1;
+  }
+
   svg {
     display: inline-block;
     vertical-align: middle;
