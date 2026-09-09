@@ -6,7 +6,7 @@ export default function InstallAppButton({ variant = 'button' }) {
   const { isInstallable, isInstalled, installApp } = useInstallPrompt()
 
   // Mobile App (PWA): Do not render if already installed or unsupported
-//   if (isInstalled || !isInstallable) return null
+  if (isInstalled || !isInstallable) return null
 
   const handleInstall = async () => {
     const result = await installApp()

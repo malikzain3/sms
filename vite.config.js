@@ -1,31 +1,48 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-// Mobile App (PWA): Vite Plugin for Service Worker & App Manifest
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    // Web / Desktop (Already existing plugins)
     react(), 
     tailwindcss(),
-
-    // Mobile App (PWA) Setup
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'script-defer', // 🚀 Auto-injects service worker script without virtual import errors
+      injectRegister: 'script-defer',
       includeAssets: ['favicon.ico', 'faviconsms.png', 'logo192.png', 'logo512.png'],
+      manifest: {
+        name: 'Schoolix Workspace',
+        short_name: 'Schoolix',
+        description: 'School Management Portal',
+        theme_color: '#10b981',
+        background_color: '#ffffff',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'logo192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: 'logo512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // 5 MB Limit
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       },
       devOptions: {
-        enabled: false // Production builds generate full service worker
+        enabled: false
       }
     })
   ],
   server: {
-    allowedHosts: true // Web / Local Server config
+    allowedHosts: true
   }
 });

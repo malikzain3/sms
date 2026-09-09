@@ -7,8 +7,6 @@ import { useSchool } from "../../context/SchoolContext";
 
 const Header = ({ onSearch, searchPlaceholder }) => {
   const [isOpen, setIsOpen] = useState(false);
-  
-
   const { schoolName, logoUrl, loading } = useSchool(); 
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -32,22 +30,6 @@ const Header = ({ onSearch, searchPlaceholder }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // SchoolContext.jsx ke andar:
-useEffect(() => {
-  const fetchSchoolData = async () => {
-    // Apka existing fetch/getDoc logic
-  };
-
-  fetchSchoolData();
-
-  // Settings update hone par instant data sync
-  window.addEventListener("schoolSettingsUpdated", fetchSchoolData);
-
-  return () => {
-    window.removeEventListener("schoolSettingsUpdated", fetchSchoolData);
-  };
-}, []);
-
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
@@ -58,14 +40,15 @@ useEffect(() => {
     setIsOpen(!isOpen);
   };
 
-  // Safe fallback text jab tak data load ho raha ho
   const displayName = loading ? "..." : (schoolName || "School");
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        {/* Left Side */}
-        <div className="flex items-center gap-3">
+      {/* 🚀 Main layout fix: Mobile par flex-row rakha hai taakay Bell icon hamesha side par rahe */}
+      <div className="flex items-center justify-between gap-3 w-full">
+        
+        {/* Left Side: Logo & Text */}
+        <div className="flex items-center gap-3 min-w-0">
           {logoUrl && (
             <img
               src={logoUrl}
@@ -73,14 +56,14 @@ useEffect(() => {
               className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover border border-slate-200 shrink-0"
             />
           )}
-          <div>
-            <div className="relative inline-block overflow-hidden">
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          <div className="min-w-0 flex-1">
+            <div className="relative inline-block overflow-hidden max-w-full">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight truncate">
                 {`Welcome to ${displayName}`}
               </h1>
 
               <motion.h1
-                className="absolute inset-0 text-xl md:text-2xl font-black tracking-tight bg-linear-to-r from-transparent via-blue-500 to-transparent bg-clip-text text-transparent select-none"
+                className="absolute inset-0 text-lg sm:text-xl md:text-2xl font-black tracking-tight bg-linear-to-r from-transparent via-blue-500 to-transparent bg-clip-text text-transparent select-none truncate"
                 style={{ backgroundSize: "200% 100%" }}
                 animate={{ backgroundPosition: ["200% 0%", "-200% 0%"] }}
                 transition={{
@@ -93,18 +76,18 @@ useEffect(() => {
                 {`Welcome to ${displayName}`}
               </motion.h1>
             </div>
-            <p className="text-xs text-slate-400 mt-0 font-medium">
+            <p className="text-xs text-slate-400 mt-0 font-medium truncate">
               Here's your school operational insights portal.
             </p>
           </div>
         </div>
 
-        {/* Right Side */}
-        <div className="relative flex items-center justify-end ml-auto z-50">
+        {/* Right Side: Bell Icon */}
+        <div className="relative flex items-center shrink-0 z-50">
           <button
             ref={bellRef}
             onClick={toggleLicenseCard}
-            className="text-xl focus:outline-none cursor-pointer rounded-full p-2 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
+            className="text-lg sm:text-xl focus:outline-none cursor-pointer rounded-full p-2 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
           >
             <FontAwesomeIcon icon={faBell} />
           </button>
@@ -115,6 +98,7 @@ useEffect(() => {
             </div>
           )}
         </div>
+
       </div>
     </>
   );
