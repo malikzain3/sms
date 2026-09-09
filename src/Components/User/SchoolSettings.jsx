@@ -1,12 +1,8 @@
-import React, {
-  useState,
-  useRef,
-  useLayoutEffect,
-  useEffect,
-} from "react";
+import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
 import gsap from "gsap";
 import { useSchool } from "../../context/SchoolContext";
 import { auth, db } from "../../firebaseConfig";
+import InstallAppButton from "./InstallAppButton";
 import Header from "./Header";
 import {
   EmailAuthProvider,
@@ -804,6 +800,10 @@ const SchoolSettings = () => {
               <Hash className="w-3 h-3" />
               School ID: {schoolId}
             </span>
+          </div>
+          {/* 🚀 PWA Install App Button */}
+          <div>
+            <InstallAppButton variant="button" />
           </div>
         </div>
 
